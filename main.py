@@ -42,8 +42,3 @@ def arv():
     print("📡 Comps API Status:", comps_res.status_code)
     print("🧾 Comps Response:", comps_res.text)
 
-
-{
-  "address": "1600 Pennsylvania Ave NW, Washington, DC 20500"
-}
-
