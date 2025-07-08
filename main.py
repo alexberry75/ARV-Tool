@@ -1,44 +1,40 @@
-from flask import Flask, request, jsonify
-import requests
+# main.py
+from fastapi import FastAPI, Query
+from fastapi.middleware.cors import CORSMiddleware
 import os
+import requests
 
-app = Flask(__name__)
+app = FastAPI()
 
-RAPIDAPI_KEY = "40a5b86b02msh1873ae2efb2df19p19a161jsn415c1952d48c"
-ZILLOW_API_HOST = "zillow-com1.p.rapidapi.com"
+# CORS so GPT can call it
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-@app.route('/')
-def home():
-    return "ARV Tool is running!"
+ZILLOW_API_KEY = os.getenv("ZILLOW_API_KEY")
 
-@app.route('/arv', methods=['POST'])
-def arv():
-    data = request.get_json()
-    address = data.get("address")
-    print("📩 Received address:", address)
+@app.get("/get_arv_estimate")
+def get_arv_estimate(address: str = Query(...), budget: float = Query(...)):
+    if not ZILLOW_API_KEY:
+        return {"error": "Missing Zillow API key."}
 
-    # Step 1: Get property info
-    res = requests.get(
-        "https://zillow-com1.p.rapidapi.com/property",
-        headers={...},
-        params={"address": address}
-    )
-    print("📡 Property API Status:", res.status_code)
-    print("🧾 Property Response:", res.text)
+    # Example simulated response — replace with your actual Zillow API logic
+    comps = [
+        {"address": "456 Oak St", "price": 640000, "sqft": 2050},
+        {"address": "789 Pine St", "price": 665000, "sqft": 2150},
+        {"address": "234 Elm St", "price": 670000, "sqft": 2080},
+    ]
 
-    if res.status_code != 200:
-        return jsonify({"error": "Failed to fetch property data"}), 500
+    avg_price_per_sqft = sum(c["price"] / c["sqft"] for c in comps) / len(comps)
+    estimated_sqft = 2100  # Simulated — replace with Zillow property info
+    arv = avg_price_per_sqft * estimated_sqft
 
-    prop = res.json()
-    zpid = prop.get("zpid")
-    print("🏷 ZPID:", zpid)
-
-    # Step 2: Get comps
-    comps_res = requests.get(
-        "https://zillow-com1.p.rapidapi.com/similar-properties",
-        headers={...},
-        params={"zpid": zpid}
-    )
-    print("📡 Comps API Status:", comps_res.status_code)
-    print("🧾 Comps Response:", comps_res.text)
-
+    return {
+        "arv": round(arv, 2),
+        "price_per_sqft": round(avg_price_per_sqft, 2),
+        "estimated_sqft": estimated_sqft,
+        "comps_used": comps
+    }
