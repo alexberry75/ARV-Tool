@@ -41,4 +41,5 @@ def arv():
     )
     print("📡 Comps API Status:", comps_res.status_code)
     print("🧾 Comps Response:", comps_res.text)
+    print("ZPID:", zpid)
 
