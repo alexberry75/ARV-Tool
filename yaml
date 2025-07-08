@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: arv-tool
+    runtime: python
+    buildCommand: ""
+    startCommand: "python main.py"
+    envVars:
+      - key: PORT
+        value: 10000
+    plan: free
